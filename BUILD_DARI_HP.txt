@@ -1,0 +1,38 @@
+NEKO BOT — VERSI BUILD DARI HP
+
+Pilihan utama: Termux + Node.js + Capacitor.
+
+PENTING:
+- Ini tidak memerlukan laptop.
+- Untuk menghasilkan APK Android secara native, lingkungan Android build tetap perlu
+  memasang Java/JDK dan Android SDK di HP. Prosesnya lebih berat daripada membuat
+  halaman web.
+- Jika HP kehabisan ruang/RAM, gunakan opsi cloud build (GitHub Actions) dari HP.
+
+LANGKAH TERMUX:
+1. Install Termux dari sumber resminya/F-Droid.
+2. Buka Termux.
+3. Masuk ke folder proyek ini.
+4. Jalankan:
+   pkg update
+   pkg install nodejs-lts openjdk-17 git
+   npm install
+   npx cap add android
+   npx cap sync android
+
+Untuk build APK native, pasang Android SDK/command-line tools pada HP dan set
+ANDROID_HOME/ANDROID_SDK_ROOT sesuai lokasi SDK, kemudian:
+   cd android
+   ./gradlew assembleDebug
+
+APK:
+   android/app/build/outputs/apk/debug/app-debug.apk
+
+ALTERNATIF YANG LEBIH MUDAH:
+Gunakan cloud build dari GitHub Actions. Upload folder proyek ini ke repository,
+lalu workflow Android dapat membangun APK tanpa membebani HP.
+
+KONEKSI ROBOT:
+- Sambungkan HP ke WiFi NEKO_V1.
+- IP default robot: 192.168.4.1.
+- Aplikasi memakai halaman kontrol yang sudah diekstrak dari firmware NEKO_003.

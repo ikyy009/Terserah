@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<script>
+(function(){
+  const params = new URLSearchParams(location.search);
+  const saved = localStorage.getItem('neko_robot_ip');
+  let base = params.get('ip') || saved || '192.168.4.1';
+  base = base.replace(/\/+$/,'');
+  window.NEKO_API_BASE = (location.protocol === 'http:' || location.protocol === 'https:') &&
+                         location.hostname &&
+                         location.hostname !== 'localhost' &&
+                         !location.protocol.startsWith('file')
+                         ? '' : ('http://' + base);
+
+  const oldFetch = window.fetch;
+  window.fetch = function(input, init){
+    if (typeof input === 'string' && input.startsWith('/')) {
+      input = window.NEKO_API_BASE + input;
+    }
+    return oldFetch(input, init);
+  };
+})();
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEKO BOT</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0b0e14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NEKO BOT">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAADgElEQVR4nO3bsU4bQRRAUROlI4KG/P8HpoqUnlSWLIRtsGe9O3vPqSMyj/GdMZh9en55ez9A1I+1FwBrEgBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpAiBNAKQJgDQBkCYA0gRAmgBIEwBpP9dewNL+/f1z99f49fp7wErWUZ//mqfnl7f3tRcx2ohNP2eGF0N9/u/YVQBLbvxHW3wh1Oe/xW5+Bnjk5q/x/11Tn/9W098AW9iINU/D+vz3mvoG2MLmHw7rraM+/whTBwD3mjaArZ069ffgW1vPV00ZwFa/2Y9aV33+kaYMAEaZLoCtnzJLr68+/2jTBQAjCYC0qQKY5Xpdap31+ZcwVQAwmgBIEwBpAiBNAKQJgDQBkLb7h+LPOfcQx0y/w75Hff6j5A1w6QmmmZ9u+qr6/KdSN8BXN/f47/Z2Gtbn/0zyBoCjTAC3XO17ejtQn/+cRAD3bOQeXgT1+S9JBADnCIA0AZAmANIEQFoigHs+0NnDh0H1+S9JBHA43LaRe9r8+vznZAKAz6T+Fuh4ol37cGevJ199/s8kb4BLG1zY/Pr8p1I3wKnaRn9Un/8oeQPAkQBIEwBpAiBNAKQJgDQBkDZVALM8nrfUOuvzL2GqAGA0AZA2XQBbv16XXl99/tGmCwBGmjKArZ4yj1pXff6RpgzgcNjeN/vR66nPP8q0AcAIUwewlVNnrXXU5x/h6fnl7X3tRYywxgMeW9r4+vy3mvoGOOU9eHv+W+3mBji15Gk4w8bX5/+OXQZwasSLYeZNr89/ze4DgEt28zMA3EIApAmANAGQJgDSBECaAEgTAGkCIE0ApAmANAGQJgDSBECaAEgTAGkCIE0ApAmANAGQJgDSBECaAEgTAGkCIE0ApAmANAGQJgDSBECaAEgTAGkCIE0ApAmANAGQJgDSBECaAEgTAGkCIE0ApAmANAGQJgDSBECaAEgTAGkCIE0ApAmANAGQJgDSBECaAEgTAGkCIE0ApAmANAGQJgDSBECaAEgTAGkCIE0ApP0HxCe+g+5dPjsAAAAASUVORK5CYII=">
+<style>
+  :root{
+    --bg:#0b0e14;
+    --panel:#12161f;
+    --bezel:#1c2230;
+    --text:#eaeaea;
+    --muted:#8b93a3;
+    --accent:#ffb86b;
+    --ok:#7ee787;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family: 'Courier New', ui-monospace, monospace;
+    display:flex;
+    justify-content:center;
+    padding:24px 16px 60px;
+  }
+  .wrap{width:100%;max-width:380px;}
+  h1{
+    font-size:1.1rem;
+    letter-spacing:0.5px;
+    margin:0 0 18px;
+    color:var(--muted);
+    font-weight:600;
+  }
+  .screen-frame{
+    background:var(--bezel);
+    border-radius:14px;
+    padding:14px;
+    position:relative;
+    margin-bottom:20px;
+  }
+  .screen-frame::before, .screen-frame::after,
+  .screen-frame .corner-l, .screen-frame .corner-r{
+    content:"";
+    position:absolute;
+    width:6px;height:6px;
+    border-radius:50%;
+    background:#3a4356;
+  }
+  .screen-frame::before{top:8px;left:8px;}
+  .screen-frame::after{top:8px;right:8px;}
+  .corner-l{bottom:8px;left:8px;}
+  .corner-r{bottom:8px;right:8px;}
+  .screen{
+    background:#000;
+    border-radius:6px;
+    padding:22px 10px;
+    display:flex;
+    justify-content:center;
+    gap:34px;
+  }
+  .eye{
+    position:relative;
+    background:var(--face-color, #fff);
+    transition:background 0.2s ease, width 0.2s ease, height 0.2s ease, border-radius 0.2s ease;
+  }
+  .eye.shape-round{
+    width:26px;height:26px;
+    border-radius:50%;
+  }
+  .eye.shape-capsule{
+    width:15px;height:32px;
+    border-radius:8px;
+  }
+  .eye.shape-special{
+    width:24px;height:30px;
+    border-radius:50%;
+    background:#ffb82e !important;
+    box-shadow:0 0 10px 3px rgba(255,150,30,0.55);
+  }
+  .eye.shape-special .pupil{
+    display:none;
+  }
+  .eye .pupil{
+    position:absolute;
+    top:50%; left:50%;
+    width:8px;height:8px;
+    margin:-4px 0 0 -4px;
+    border-radius:50%;
+    background:#0b0e14;
+  }
+  .eye.shape-capsule .pupil{
+    display:none;
+  }
+  .status-line{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.75rem;
+    color:var(--muted);
+    margin-top:10px;
+  }
+  .status-line span.value{color:var(--text);}
+  section{
+    background:var(--panel);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:14px;
+  }
+  section h2{
+    font-size:0.7rem;
+    letter-spacing:0.5px;
+    color:var(--muted);
+    margin:0 0 12px;
+    font-weight:600;
+  }
+  .battery-bar{
+    height:10px;
+    border-radius:5px;
+    background:#232a38;
+    overflow:hidden;
+    margin-top:8px;
+  }
+  .battery-fill{
+    height:100%;
+    background:var(--ok);
+    width:0%;
+    transition:width 0.4s ease;
+  }
+  input[type=color]{
+    -webkit-appearance:none;
+    width:56px;height:56px;
+    border:none;
+    border-radius:10px;
+    background:none;
+    padding:0;
+  }
+  .color-row{display:flex;align-items:center;gap:14px;}
+  .color-row span{color:var(--muted);font-size:0.8rem;}
+  .foods{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .food-btn{
+    flex:1 1 auto;
+    background:#1a2130;
+    border:1px solid #2a3244;
+    color:var(--text);
+    padding:10px 8px;
+    border-radius:8px;
+    font-family:inherit;
+    font-size:0.85rem;
+    cursor:pointer;
+  }
+  .food-btn:active{background:var(--accent);color:#111;}
+  .custom-food{
+    display:flex;
+    gap:8px;
+  }
+  .custom-food input{
+    flex:1;
+    background:#1a2130;
+    border:1px solid #2a3244;
+    color:var(--text);
+    padding:10px;
+    border-radius:8px;
+    font-family:inherit;
+  }
+  .custom-food button, .primary-btn{
+    background:var(--accent);
+    border:none;
+    color:#111;
+    padding:10px 16px;
+    border-radius:8px;
+    font-family:inherit;
+    font-weight:600;
+    cursor:pointer;
+  }
+  #feedMsg{
+    font-size:0.75rem;
+    color:var(--ok);
+    margin-top:8px;
+    min-height:1em;
+  }
+  .mood-row, .power-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .mood-btn, .power-btn, .shape-btn{
+    flex:1 1 auto;
+    background:#1a2130;
+    border:1px solid #2a3244;
+    color:var(--text);
+    padding:10px 8px;
+    border-radius:8px;
+    font-family:inherit;
+    font-size:0.8rem;
+    cursor:pointer;
+  }
+  .mood-btn.active, .shape-btn.active, .power-btn.active{
+    background:var(--accent);
+    color:#111;
+    border-color:var(--accent);
+  }
+  .power-btn.danger{
+    border-color:#7a3030;
+    color:#ff9b9b;
+  }
+  .power-btn.danger:active{
+    background:#7a3030;
+    color:#fff;
+  }
+  .sound-bar{
+    height:10px;
+    border-radius:5px;
+    background:#232a38;
+    overflow:hidden;
+    margin-top:8px;
+  }
+  .sound-fill{
+    height:100%;
+    background:var(--accent);
+    width:0%;
+    transition:width 0.15s ease;
+  }
+  .sleep-banner{
+    display:none;
+    background:#2a2333;
+    color:#d9b8ff;
+    font-size:0.75rem;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:12px;
+    text-align:center;
+  }
+  .sleep-banner.show{ display:block; }
+  .color-row.locked{ opacity:0.35; pointer-events:none; }
+  .special-note{
+    display:none;
+    font-size:0.72rem;
+    color:#ffb86b;
+    margin-top:10px;
+    line-height:1.4;
+  }
+  .special-note.show{ display:block; }
+</style>
+</head>
+<body>
+<section style="margin:12px 0;padding:12px;border:1px solid #252b38;border-radius:14px;background:#10141d">
+  <div style="font-weight:700;margin-bottom:6px">Koneksi NEKO</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <input id="robotIp" value="192.168.4.1" placeholder="IP robot"
+      style="flex:1;min-width:150px;padding:10px;border-radius:10px;border:1px solid #333;background:#0b0e14;color:#fff">
+    <button id="saveRobotIp" style="padding:10px 14px;border-radius:10px">Simpan IP</button>
+  </div>
+  <div id="connectionMsg" style="font-size:12px;opacity:.75;margin-top:7px">
+    Sambungkan HP ke WiFi NEKO_V1 terlebih dahulu.
+  </div>
+</section>
+<script>
+(function(){
+  const input=document.getElementById('robotIp');
+  const saved=localStorage.getItem('neko_robot_ip');
+  if(saved) input.value=saved;
+  document.getElementById('saveRobotIp').onclick=function(){
+    const ip=input.value.trim().replace(/^https?:\/\//,'').replace(/\/+$/,'');
+    if(ip){ localStorage.setItem('neko_robot_ip',ip); location.href='?ip='+encodeURIComponent(ip); }
+  };
+})();
+</script>
+
+<div class="wrap">
+  <h1>NEKO_MANUAL CONTROL</h1>
+
+  <div class="sleep-banner" id="sleepBanner">robot sedang tidur (layar mati)</div>
+
+  <div class="screen-frame">
+    <div class="corner-l"></div><div class="corner-r"></div>
+    <div class="screen">
+      <div class="eye ##EYE_SHAPE_CLASS##" id="eyeL" style="background:##EYE_COLOR##;"><span class="pupil"></span></div>
+      <div class="eye ##EYE_SHAPE_CLASS##" id="eyeR" style="background:##EYE_COLOR##;"><span class="pupil"></span></div>
+    </div>
+    <div class="status-line">
+      <span>baterai</span>
+      <span class="value" id="battText">-- %</span>
+    </div>
+    <div class="battery-bar"><div class="battery-fill" id="battFill"></div></div>
+    <div class="status-line" style="margin-top:10px;">
+      <span>level suara</span>
+      <span class="value" id="soundText">-- </span>
+    </div>
+    <div class="sound-bar"><div class="sound-fill" id="soundFill"></div></div>
+  </div>
+
+  <section>
+    <h2>mood robot</h2>
+    <div class="mood-row">
+      <button class="mood-btn" data-mood="auto">Otomatis</button>
+      <button class="mood-btn" data-mood="happy">Senang</button>
+      <button class="mood-btn" data-mood="sad">Sedih</button>
+      <button class="mood-btn" data-mood="neutral">Netral</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>daya robot</h2>
+    <div class="power-row">
+      <button class="power-btn" id="btnSleep">Tidurkan</button>
+      <button class="power-btn" id="btnWake">Bangunkan</button>
+      <button class="power-btn danger" id="btnRestart">Restart</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>mode jam</h2>
+    <div class="power-row">
+      <button class="power-btn" id="btnClockOn">Aktifkan Mode Jam</button>
+      <button class="power-btn" id="btnClockOff">Kembali ke Wajah</button>
+    </div>
+    <div class="color-row" style="margin-top:10px;">
+      <input type="color" id="clockColorPicker" value="#ffffff">
+      <span>warna tampilan jam (jam ambil waktu dari HP, tidak permanen setelah restart)</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>warna mata</h2>
+    <div class="color-row" id="colorRow">
+      <input type="color" id="colorPicker" value="##EYE_COLOR##">
+      <span id="colorHint">hanya bagian putih mata yang berubah warna</span>
+    </div>
+    <div class="special-note" id="colorLockNote">Gaya Special memakai warna tetap sesuai desain, jadi warna mata tidak berlaku. Pilihan warna kamu tetap tersimpan dan berlaku lagi saat kembali ke Bulat atau Kapsul.</div>
+  </section>
+
+  <section>
+    <h2>tampilan wajah</h2>
+    <div class="mood-row">
+      <button class="shape-btn" data-shape="round">Bulat + pupil</button>
+      <button class="shape-btn" data-shape="capsule">Kapsul polos</button>
+      <button class="shape-btn" data-shape="special">✨ Special</button>
+    </div>
+    <div class="special-note" id="specialNote">Special: ekspresi lengkap dengan animasi (kilau, api, 💢, 💤, not musik, baterai, ⚡). Marah muncul otomatis saat diberi 💩, dan Super Marah saat 💩 diberikan lebih dari 3 kali dalam 24 jam.</div>
+    <div id="shapeMsg" style="font-size:0.75rem;color:#ff9b9b;margin-top:8px;min-height:1em;"></div>
+  </section>
+
+  <section>
+    <h2>beri makan</h2>
+    <div class="foods">
+      <button class="food-btn" data-food="Apel">🍎 Apel</button>
+      <button class="food-btn" data-food="Roti">🍞 Roti</button>
+      <button class="food-btn" data-food="Ikan">🐟 Ikan</button>
+      <button class="food-btn" data-food="💩">💩</button>
+    </div>
+    <div class="custom-food">
+      <input type="text" id="customFood" placeholder="makanan lain...">
+      <button id="sendCustomFood">Beri</button>
+    </div>
+    <div id="feedMsg"></div>
+  </section>
+</div>
+
+<script>
+const eyeL = document.getElementById('eyeL');
+const eyeR = document.getElementById('eyeR');
+const colorPicker = document.getElementById('colorPicker');
+const battText = document.getElementById('battText');
+const battFill = document.getElementById('battFill');
+const soundText = document.getElementById('soundText');
+const soundFill = document.getElementById('soundFill');
+const sleepBanner = document.getElementById('sleepBanner');
+const feedMsg = document.getElementById('feedMsg');
+const colorRow = document.getElementById('colorRow');
+const colorLockNote = document.getElementById('colorLockNote');
+const specialNote = document.getElementById('specialNote');
+const shapeMsg = document.getElementById('shapeMsg');
+let currentShape = 'round';
+
+function hexToRgb(hex){
+  const v = hex.replace('#','');
+  return {
+    r: parseInt(v.substring(0,2),16),
+    g: parseInt(v.substring(2,4),16),
+    b: parseInt(v.substring(4,6),16)
+  };
+}
+
+colorPicker.addEventListener('input', () => {
+  if(currentShape === 'special') return;
+  const hex = colorPicker.value;
+  eyeL.style.background = hex;
+  eyeR.style.background = hex;
+  const {r,g,b} = hexToRgb(hex);
+  const body = new URLSearchParams({r, g, b});
+  fetch('/api/color', {method:'POST', body});
+});
+
+function sendFeed(food){
+  if(!food) return;
+  const body = new URLSearchParams({food});
+  fetch('/api/feed', {method:'POST', body}).then(()=>{
+    feedMsg.textContent = 'Robot sedang makan: ' + food;
+    setTimeout(()=>{ feedMsg.textContent=''; }, 3000);
+  });
+}
+
+document.querySelectorAll('.food-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> sendFeed(btn.dataset.food));
+});
+
+document.getElementById('sendCustomFood').addEventListener('click', ()=>{
+  const input = document.getElementById('customFood');
+  sendFeed(input.value.trim());
+  input.value = '';
+});
+
+document.querySelectorAll('.mood-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const mode = btn.dataset.mood;
+    const body = new URLSearchParams({mode});
+    fetch('/api/mood', {method:'POST', body}).then(()=>{
+      document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+});
+
+function setEyeShapeUI(shape){
+  currentShape = shape;
+  const cls = 'shape-' + shape;
+  [eyeL, eyeR].forEach(el=>{
+    el.classList.remove('shape-round', 'shape-capsule', 'shape-special');
+    el.classList.add(cls);
+  });
+  const sp = (shape === 'special');
+  colorRow.classList.toggle('locked', sp);
+  colorLockNote.classList.toggle('show', sp);
+  specialNote.classList.toggle('show', sp);
+  document.querySelectorAll('.shape-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.shape === shape);
+  });
+}
+
+document.querySelectorAll('.shape-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const shape = btn.dataset.shape;
+    const body = new URLSearchParams({shape});
+    shapeMsg.textContent = '';
+    fetch('/api/eyeshape', {method:'POST', body}).then(r=>r.json()).then(d=>{
+      if(d && d.ok){
+        setEyeShapeUI(shape);
+      }else{
+        shapeMsg.textContent = 'Gagal ganti gaya: memori robot kurang untuk Special.';
+      }
+    }).catch(()=>{});
+  });
+});
+
+function sendPower(action){
+  const body = new URLSearchParams({action});
+  fetch('/api/power', {method:'POST', body});
+}
+
+document.getElementById('btnSleep').addEventListener('click', ()=> sendPower('sleep'));
+document.getElementById('btnWake').addEventListener('click', ()=> sendPower('wake'));
+document.getElementById('btnRestart').addEventListener('click', ()=>{
+  if(confirm('Restart robot sekarang? Robot akan menyala ulang beberapa detik.')){
+    sendPower('restart');
+  }
+});
+
+const clockColorPicker = document.getElementById('clockColorPicker');
+
+document.getElementById('btnClockOn').addEventListener('click', ()=>{
+  const now = new Date();
+  const body = new URLSearchParams({
+    action: 'on',
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+    day: now.getDate(),
+    hour: now.getHours(),
+    minute: now.getMinutes(),
+    second: now.getSeconds()
+  });
+  fetch('/api/clock', {method:'POST', body});
+});
+
+document.getElementById('btnClockOff').addEventListener('click', ()=>{
+  const body = new URLSearchParams({action:'off'});
+  fetch('/api/clock', {method:'POST', body});
+});
+
+clockColorPicker.addEventListener('input', ()=>{
+  const {r,g,b} = hexToRgb(clockColorPicker.value);
+  const body = new URLSearchParams({r,g,b});
+  fetch('/api/clockcolor', {method:'POST', body});
+});
+
+function refreshStatus(){
+  fetch('/api/status').then(r=>r.json()).then(data=>{
+    battText.textContent = data.battery_percent + ' %' + (data.charging ? ' ⚡ mengisi' : '');
+    battFill.style.width = data.battery_percent + '%';
+
+    soundText.textContent = Math.round(data.sound_level);
+    soundFill.style.width = Math.min(100, data.sound_level) + '%';
+
+    sleepBanner.classList.toggle('show', data.sleeping);
+
+    if(data.color){
+      colorPicker.value = data.color;
+      if(data.eye_shape !== 2){
+        eyeL.style.background = data.color;
+        eyeR.style.background = data.color;
+      }
+    }
+
+    if(data.clock_color){
+      clockColorPicker.value = data.clock_color;
+    }
+
+    document.getElementById('btnClockOn').classList.toggle('active', !!data.clock_mode);
+    document.getElementById('btnClockOff').classList.toggle('active', !data.clock_mode);
+
+    if(typeof data.eye_shape !== 'undefined'){
+      setEyeShapeUI(data.eye_shape === 2 ? 'special' : (data.eye_shape === 1 ? 'capsule' : 'round'));
+    }
+
+    const moodNames = {0:'auto', 1:'happy', 2:'sad', 3:'neutral'};
+    const activeMood = moodNames[data.manual_mood] || 'auto';
+    document.querySelectorAll('.mood-btn').forEach(b=>{
+      b.classList.toggle('active', b.dataset.mood === activeMood);
+    });
+  }).catch(()=>{});
+}
+
+refreshStatus();
+setInterval(refreshStatus, 1200);
+</script>
+</body>
+</html>
